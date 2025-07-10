@@ -67,6 +67,9 @@ public class Zzabarian : CharacterBase
         else
             _isRun = false;
 
+        
+
+
         Ray downRay = new Ray(transform.position + Vector3.up, Vector3.down);
 
         if (Physics.Raycast(downRay, 1.2f))
@@ -98,6 +101,21 @@ public class Zzabarian : CharacterBase
                     ExchangeAnimation(AniState.Walk);
             }
         }
+
+        //임시
+        //1=>2 연계 시 aniState 무시하도록 했으니 이후 확인 필요.
+        if (Input.GetButtonDown("Fire1"))
+        {
+            ExchangeAnimation(AniState.Attack);
+            _aniController.SetTrigger("StdAttack1");
+        }
+
+        if (Input.GetButtonDown("Fire2"))
+        {
+            ExchangeAnimation(AniState.Attack);
+            _aniController.SetTrigger("StdAttack2");
+        }
+        //==
     }
     public override void ExchangeAnimation(AniState state)
     {
@@ -117,6 +135,10 @@ public class Zzabarian : CharacterBase
                 else
                     _moveSpeed = _runSpeed;
                 break;
+            case AniState.Attack:
+                _moveSpeed = 0f;
+                break;
+
         }
         _aniController.SetInteger("AniState", (int)state);
         _nowState = state;

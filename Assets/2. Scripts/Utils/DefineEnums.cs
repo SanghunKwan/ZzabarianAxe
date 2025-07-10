@@ -8,6 +8,7 @@ namespace DefineEnums
         Idle,
         Walk,
         Run,
+        Attack
     }
 
 

@@ -8,7 +8,21 @@ namespace DefineEnums
         Idle,
         Walk,
         Run,
-        Attack
+        Attack,
+        JustGuard,
+
+        Dead = 50
+    }
+
+    public enum AttackName
+    {
+        StdAttack1,
+        StdAttack2,
+        SDAttack,
+        SUAttack,
+        Kick,
+
+        Max
     }
 
 

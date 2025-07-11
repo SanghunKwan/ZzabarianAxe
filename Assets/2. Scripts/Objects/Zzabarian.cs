@@ -4,6 +4,9 @@ using UnityEngine;
 public class Zzabarian : CharacterBase
 {
     [SerializeField] GameObject _weaponObj;
+    [SerializeField] GameObject _decoWeaponObj;
+    [SerializeField] BoxCollider _weaponCollider;
+    [SerializeField] BoxCollider _kickCollider;
 
     //참조변수
     CharacterController _charController;
@@ -14,6 +17,7 @@ public class Zzabarian : CharacterBase
 
     bool _isArmed;
     bool _isRun;
+    bool _isAttack;
 
 
     //임시
@@ -38,24 +42,41 @@ public class Zzabarian : CharacterBase
     public void SetArmed(bool isSet)
     {
         _isArmed = isSet;
+
+        if (!_isArmed)
+        {
+            DisableKickCollider();
+            DisableWeaponCollider();
+        }
+
         if (_nowState == AniState.Idle)
         {
             if (isSet)
+            {
                 _weaponObj.SetActive(_isArmed);
+                _decoWeaponObj.SetActive(!_isArmed);
+            }
         }
         else
+        {
             _weaponObj.SetActive(_isArmed);
+            _decoWeaponObj.SetActive(!_isArmed);
+        }
 
         ExchangeAnimation(_nowState);
     }
     public void DisableArmed()
     {
         _weaponObj.SetActive(false);
+        _decoWeaponObj.SetActive(true);
     }
 
 
     private void Update()
     {
+        SetActionKeyProc();
+
+        if (_isAttack) return;
 
         if (Input.GetButtonDown("WeaponEquip"))
             SetArmed(!_isArmed);
@@ -66,8 +87,6 @@ public class Zzabarian : CharacterBase
         }
         else
             _isRun = false;
-
-        
 
 
         Ray downRay = new Ray(transform.position + Vector3.up, Vector3.down);
@@ -117,6 +136,55 @@ public class Zzabarian : CharacterBase
         }
         //==
     }
+    void SetActionKeyProc()
+    {
+        if (!_isArmed) return;
+
+        int count = (int)AttackName.Max;
+        bool active = false;
+
+        string name;
+        for (int i = 0; i < count; i++)
+        {
+            name = ((AttackName)i).ToString();
+            if (Input.GetButtonDown(name))
+            {
+                active = true;
+                _aniController.SetTrigger(name);
+            }
+        }
+
+        if (active)
+            ExchangeAnimation(AniState.Attack);
+
+    }
+
+
+    void DisableAttacked()
+    {
+        _isAttack = false;
+        _nowState = AniState.Idle;
+        DisableKickCollider();
+        DisableWeaponCollider();
+    }
+
+    void EnableWeaponCollider()
+    {
+        _weaponCollider.enabled = true;
+    }
+    void DisableWeaponCollider()
+    {
+        _weaponCollider.enabled = false;
+    }
+    void EnableKickCollider()
+    {
+        _kickCollider.enabled = true;
+    }
+    void DisableKickCollider()
+    {
+        _kickCollider.enabled = false;
+    }
+
     public override void ExchangeAnimation(AniState state)
     {
         _aniController.SetBool("IsArmed", _isArmed);
@@ -136,7 +204,7 @@ public class Zzabarian : CharacterBase
                     _moveSpeed = _runSpeed;
                 break;
             case AniState.Attack:
-                _moveSpeed = 0f;
+                _isAttack = true;
                 break;
 
         }
@@ -148,5 +216,15 @@ public class Zzabarian : CharacterBase
     {
         _aniController.SetFloat("RNL", x);
         _aniController.SetFloat("FNB", z);
+    }
+
+    public void OnHitting()
+    {
+        int count = (int)AttackName.Max;
+
+        for (int i = 0; i < count; i++)
+            _aniController.ResetTrigger(((AttackName)i).ToString());
+
+
     }
 }

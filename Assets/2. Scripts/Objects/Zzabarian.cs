@@ -8,16 +8,22 @@ public class Zzabarian : CharacterBase
     [SerializeField] BoxCollider _weaponCollider;
     [SerializeField] BoxCollider _kickCollider;
 
+    float _guardTime = 2;
+
     //참조변수
     CharacterController _charController;
+
+    Transform _followCam;
 
     //정보변수
     AniState _nowState;
     float _moveSpeed;
+    float _protectingTime;
 
     bool _isArmed;
     bool _isRun;
     bool _isAttack;
+    bool _isGuard;
 
 
     //임시
@@ -38,6 +44,12 @@ public class Zzabarian : CharacterBase
         DisableArmed();
     }
 
+
+    void SetFollowCam(Transform cam)
+    {
+        _followCam = cam;
+        Debug.Log(_followCam.name);
+    }
 
     public void SetArmed(bool isSet)
     {
@@ -65,6 +77,8 @@ public class Zzabarian : CharacterBase
 
         ExchangeAnimation(_nowState);
     }
+
+
     public void DisableArmed()
     {
         _weaponObj.SetActive(false);
@@ -74,6 +88,8 @@ public class Zzabarian : CharacterBase
 
     private void Update()
     {
+        if (_isGuard) return;
+
         SetActionKeyProc();
 
         if (_isAttack) return;
@@ -81,21 +97,13 @@ public class Zzabarian : CharacterBase
         if (Input.GetButtonDown("WeaponEquip"))
             SetArmed(!_isArmed);
 
-        if (Input.GetButton("Run"))
-        {
-            _isRun = true;
-        }
-        else
-            _isRun = false;
 
 
         Ray downRay = new Ray(transform.position + Vector3.up, Vector3.down);
-
         if (Physics.Raycast(downRay, 1.2f))
 
         //if (_charController.isGrounded)
         {
-
             float mz = Input.GetAxis("Vertical");
             float mx = Input.GetAxis("Horizontal");
 
@@ -104,7 +112,7 @@ public class Zzabarian : CharacterBase
             Vector3 dir = new Vector3(mx, 0, mz);
             dir = dir.magnitude > 1 ? dir.normalized : dir;
 
-
+            transform.rotation = Quaternion.Euler(transform.eulerAngles.x, _followCam.eulerAngles.y, transform.eulerAngles.z);
             _charController.SimpleMove(transform.rotation * dir * _moveSpeed);
             //_charController.Move(dir * _moveSpeed * Time.deltaTime);
 
@@ -123,17 +131,17 @@ public class Zzabarian : CharacterBase
 
         //임시
         //1=>2 연계 시 aniState 무시하도록 했으니 이후 확인 필요.
-        if (Input.GetButtonDown("Fire1"))
-        {
-            ExchangeAnimation(AniState.Attack);
-            _aniController.SetTrigger("StdAttack1");
-        }
+        //if (Input.GetButtonDown("Fire1"))
+        //{
+        //    ExchangeAnimation(AniState.Attack);
+        //    _aniController.SetTrigger("StdAttack1");
+        //}
 
-        if (Input.GetButtonDown("Fire2"))
-        {
-            ExchangeAnimation(AniState.Attack);
-            _aniController.SetTrigger("StdAttack2");
-        }
+        //if (Input.GetButtonDown("Fire2"))
+        //{
+        //    ExchangeAnimation(AniState.Attack);
+        //    _aniController.SetTrigger("StdAttack2");
+        //}
         //==
     }
     void SetActionKeyProc()
@@ -159,7 +167,30 @@ public class Zzabarian : CharacterBase
 
     }
 
+    private void LateUpdate()
+    {
+        if (Input.GetButtonDown("Run"))
+            _isRun = !_isRun;
 
+        if (_isAttack && _isArmed)
+        {
+            if (Input.GetButton("JGuard"))
+            {
+                ExchangeAnimation(AniState.JustGuard);
+            }
+        }
+        if (_isGuard)
+        {
+            _protectingTime += Time.deltaTime;
+            if (_protectingTime >= _guardTime)
+            {
+                _protectingTime = 0;
+                ExchangeAnimation(AniState.Idle);
+            }
+        }
+
+
+    }
     void DisableAttacked()
     {
         _isAttack = false;
@@ -191,6 +222,9 @@ public class Zzabarian : CharacterBase
 
         switch (state)
         {
+            case AniState.Idle:
+                _isGuard = false;
+                break;
             case AniState.Walk:
                 if (_aniController.GetFloat("FNB") < 0)
                     _moveSpeed = _backWalkSpeed;
@@ -205,6 +239,9 @@ public class Zzabarian : CharacterBase
                 break;
             case AniState.Attack:
                 _isAttack = true;
+                break;
+            case AniState.JustGuard:
+                _isGuard = true;
                 break;
 
         }

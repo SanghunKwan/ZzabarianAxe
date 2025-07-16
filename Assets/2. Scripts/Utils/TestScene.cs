@@ -5,10 +5,9 @@ public class TestScene : MonoBehaviour
 {
     [SerializeField] GameObject _target;
 
-    NavMeshAgent _targetAgent;
     private void Start()
     {
-        _targetAgent = _target.GetComponent<NavMeshAgent>();
+        //_targetAgent = _target.GetComponent<NavMeshAgent>();
     }
 
     private void Update()
@@ -20,7 +19,8 @@ public class TestScene : MonoBehaviour
             Ray r = GetComponent<Camera>().ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(r, out hit))
             {
-                _targetAgent.SetDestination(hit.point);
+                //_targetAgent.SetDestination(hit.point);
+                _target.SendMessage("SetGoalLocation", hit.point);
             }
         }
     }

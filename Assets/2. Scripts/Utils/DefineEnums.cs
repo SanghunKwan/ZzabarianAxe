@@ -3,6 +3,22 @@ using UnityEngine;
 namespace DefineEnums
 {
     #region [Ä³¸¯ÅÍ]
+    public enum EnemyPersonality
+    {
+        Lazy,                               //12
+        LaidBack,                           //35
+        General,                            //55
+        Impatient,                          //86
+
+        Max
+    }
+    public enum RoamType
+    {
+        Random,
+        Inorder,
+        TwoPoint,
+        BackNForth
+    }
     public enum AniState
     {
         Idle,

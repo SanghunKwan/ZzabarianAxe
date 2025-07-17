@@ -1,27 +1,50 @@
 using DefineEnums;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+
 public class EnemyNormal : CharacterBase
 {
+    const float _distanceOffset = 0.1f;
+    const float _maxWaitTime = 15;
+    const float _minWaitTime = 3;
+
     //스탯
     float _attackDistance = 1.8f;
+    EnemyPersonality _myPersonality;
+    RoamType _myRoamType;
 
     //참조 변수
     NavMeshAgent _navAgent;
 
     //정보 변수
     AniState _nowState;
+    public List<Vector3> _roamPointList;
+    int _nowRoamIndex;
+    bool _isSelected;
+    float _nowWaitTime;
 
-    private void Awake()
-    {
-        InitCharacter();
-    }
 
-    public void InitCharacter()
+    Action _destroyAction;
+
+
+    public void InitCharacter(RoamType roam, in Action onDestoryAction, List<Transform> posTF, int index)
     {
         _navAgent = GetComponent<NavMeshAgent>();
         InitSetBase(1.4f, 1.4f, 4.4f, 4.4f);
+        _destroyAction = onDestoryAction;
+
+        _myRoamType = roam;
+        _myPersonality = (EnemyPersonality)UnityEngine.Random.Range(0, (int)EnemyPersonality.Max);
+
+        _roamPointList = new List<Vector3>(posTF.Count);
+        foreach (var item in posTF)
+        {
+            _roamPointList.Add(item.position);
+        }
+        SelectDefaultAutomaticAction();
     }
 
     public override void ExchangeAnimation(AniState state)
@@ -35,7 +58,7 @@ public class EnemyNormal : CharacterBase
             case AniState.Run:
                 //_aniController.speed = _runSpeed * 2;
                 _navAgent.speed = _runSpeed;
-                _navAgent.stoppingDistance = _attackDistance;
+                _navAgent.stoppingDistance = _attackDistance - _distanceOffset;
                 break;
             case AniState.Attack:
                 break;
@@ -57,32 +80,60 @@ public class EnemyNormal : CharacterBase
         ExchangeAnimation(AniState.Idle);
     }
 
-    void SetGoalLocation(Vector3 location)
+    void SetGoalLocation(Vector3 location, AniState state = AniState.Walk)
     {
         _navAgent.SetDestination(location);
-        ExchangeAnimation(AniState.Run);
+        ExchangeAnimation(state);
     }
+    void SelectDefaultAutomaticAction()
+    {
+        if (_isSelected) return;
+
+        bool selectiveVariable = (UnityEngine.Random.Range(0, 2) == 0) ? true : false;
+        if (selectiveVariable)
+        {
+            _nowWaitTime = UnityEngine.Random.Range(_minWaitTime, _maxWaitTime);
+            ExchangeAnimation(AniState.Idle);
+            Debug.LogFormat("{0}:{1:F}sec", _nowState, _nowWaitTime);
+        }
+        else
+        {
+            _nowRoamIndex = UnityEngine.Random.Range(0, _roamPointList.Count);
+            SetGoalLocation(_roamPointList[_nowRoamIndex]);
+            Debug.LogFormat("{0}:[{1}]{2}", _nowState, _nowRoamIndex, _roamPointList[_nowRoamIndex]);
+        }
+        _isSelected = true;
+    }
+
     public void SetIdle()
     {
-        _nowState = AniState.Idle;
+        if (_nowState >= AniState.Attack)
+            _nowState = AniState.Idle;
     }
 
     private void Update()
     {
         switch (_nowState)
         {
+            case AniState.Idle:
+                _nowWaitTime -= Time.deltaTime;
+                if (_nowWaitTime <= 0)
+                    _isSelected = false;
+                break;
             case AniState.Walk:
-            case AniState.Run:
-                if (Vector3.Distance(_navAgent.destination, transform.position) < 0.1f)
+                if (_navAgent.remainingDistance < _navAgent.stoppingDistance + _walkSpeed * Time.deltaTime + _distanceOffset)
                 {
-
-                    ExchangeAnimation(AniState.Idle);
+                    _isSelected = false;
                 }
                 break;
-
         }
-    }
 
+        SelectDefaultAutomaticAction();
+    }
+    private void OnDestroy()
+    {
+        _destroyAction?.Invoke();
+    }
 
     //private void OnGUI()
     //{

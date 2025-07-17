@@ -10,6 +10,7 @@ public class EnemyNormal : CharacterBase
     const float _distanceOffset = 0.1f;
     const float _maxWaitTime = 15;
     const float _minWaitTime = 3;
+    const float _percentage = 0.01f;
 
     //스탯
     float _attackDistance = 1.8f;
@@ -36,8 +37,10 @@ public class EnemyNormal : CharacterBase
         InitSetBase(1.4f, 1.4f, 4.4f, 4.4f);
         _destroyAction = onDestoryAction;
 
+        //_myPersonality = (EnemyPersonality)UnityEngine.Random.Range(0, (int)EnemyPersonality.Max);
+        _myPersonality = EnemyPersonality.Impatient;
+        _nowRoamIndex = index;
         _myRoamType = roam;
-        _myPersonality = (EnemyPersonality)UnityEngine.Random.Range(0, (int)EnemyPersonality.Max);
 
         _roamPointList = new List<Vector3>(posTF.Count);
         foreach (var item in posTF)
@@ -89,7 +92,8 @@ public class EnemyNormal : CharacterBase
     {
         if (_isSelected) return;
 
-        bool selectiveVariable = (UnityEngine.Random.Range(0, 2) == 0) ? true : false;
+        bool selectiveVariable = UnityEngine.Random.Range(0, 2) == 0;
+        //bool selectiveVariable = false;
         if (selectiveVariable)
         {
             _nowWaitTime = UnityEngine.Random.Range(_minWaitTime, _maxWaitTime);
@@ -98,13 +102,44 @@ public class EnemyNormal : CharacterBase
         }
         else
         {
-            _nowRoamIndex = UnityEngine.Random.Range(0, _roamPointList.Count);
-            SetGoalLocation(_roamPointList[_nowRoamIndex]);
-            Debug.LogFormat("{0}:[{1}]{2}", _nowState, _nowRoamIndex, _roamPointList[_nowRoamIndex]);
+            SelectPointByRoam();
         }
+
         _isSelected = true;
     }
+    void SelectPointByRoam()
+    {
+        int index;
+        switch (_myRoamType)
+        {
+            case RoamType.Random:
+                _nowRoamIndex = UnityEngine.Random.Range(0, _roamPointList.Count);
+                index = _nowRoamIndex;
+                break;
+            case RoamType.Inorder:
+                _nowRoamIndex = (_nowRoamIndex + 1) % _roamPointList.Count;
+                index = _nowRoamIndex;
+                break;
+            case RoamType.TwoPoint:
+                _nowRoamIndex = (_nowRoamIndex + 2) % _roamPointList.Count;
+                index = _nowRoamIndex;
+                break;
+            case RoamType.BackNForth:
 
+                int lastIndex = _roamPointList.Count - 1;
+                _nowRoamIndex = (_nowRoamIndex + 1) % (lastIndex * 2);
+                //index = (_nowRoamIndex < _roamPointList.Count) ? _nowRoamIndex :
+                //                                                 (_roamPointList.Count - 1) * 2 - _nowRoamIndex;
+                index = (int)Mathf.PingPong(_nowRoamIndex, lastIndex);
+                break;
+            default:
+                Debug.Log("RoamType 값이 올바르지 않습니다.");
+                index = 0;
+                break;
+        }
+        SetGoalLocation(_roamPointList[index]);
+        Debug.LogFormat("{0}:[{1}]{2}", _nowState, _nowRoamIndex, _roamPointList[index]);
+    }
     public void SetIdle()
     {
         if (_nowState >= AniState.Attack)
@@ -116,7 +151,7 @@ public class EnemyNormal : CharacterBase
         switch (_nowState)
         {
             case AniState.Idle:
-                _nowWaitTime -= Time.deltaTime;
+                _nowWaitTime -= Time.deltaTime * GetPersonalityProportionality();
                 if (_nowWaitTime <= 0)
                     _isSelected = false;
                 break;
@@ -130,6 +165,34 @@ public class EnemyNormal : CharacterBase
 
         SelectDefaultAutomaticAction();
     }
+
+    float GetPersonalityProportionality()
+    {
+        int personalityConstant;
+        switch (_myPersonality)
+        {
+            case EnemyPersonality.Lazy:
+                personalityConstant = 12;
+                break;
+            case EnemyPersonality.LaidBack:
+                personalityConstant = 35;
+                break;
+            case EnemyPersonality.General:
+                personalityConstant = 55;
+                break;
+            case EnemyPersonality.Impatient:
+                personalityConstant = 86;
+                break;
+            default:
+                personalityConstant = 0;
+                Debug.Log("_myPersonality 값이 올바르지 않습니다.");
+                break;
+        }
+
+        return personalityConstant * _percentage;
+    }
+
+
     private void OnDestroy()
     {
         _destroyAction?.Invoke();

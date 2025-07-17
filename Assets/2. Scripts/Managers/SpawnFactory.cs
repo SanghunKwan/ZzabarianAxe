@@ -12,7 +12,7 @@ public class SpawnFactory : MonoBehaviour
     [SerializeField] int _spawnSameTime = 1;                // 동시 생성 개수
 
     [Header("Char Parameter")]
-    RoamType _charRoamType;
+    [SerializeField] RoamType _charRoamType;
 
 
 

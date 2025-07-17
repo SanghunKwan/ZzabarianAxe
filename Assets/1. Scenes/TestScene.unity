@@ -3918,6 +3918,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SpawnFactory
       objectReference: {fileID: 0}
+    - target: {fileID: 7950272044051694868, guid: 2d37c2685d0e2144f9dbf1e50c87da32, type: 3}
+      propertyPath: _charRoamType
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 8996657346084064705, guid: 2d37c2685d0e2144f9dbf1e50c87da32, type: 3}
       propertyPath: m_LocalPosition.x
       value: -8.49

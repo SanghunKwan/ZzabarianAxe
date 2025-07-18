@@ -73,7 +73,7 @@ public class SpawnFactory : MonoBehaviour
                 _spawnObject.Add(ob);
 
                 EnemyNormal enemy = ob.GetComponent<EnemyNormal>();
-                enemy.InitCharacter(_charRoamType, () => _spawnObject.Remove(ob), _posList, randomIndex);
+                enemy.InitCharacter("½ð", _charRoamType, () => _spawnObject.Remove(ob), _posList, randomIndex);
 
                 _limitGenerateCount--;
             }

@@ -26,6 +26,7 @@ namespace DefineEnums
         Run,
         Attack,
         JustGuard,
+        BackHome,
 
         Dead = 50
     }
@@ -45,7 +46,10 @@ namespace DefineEnums
 
     #endregion [Ä³¸¯ÅÍ]
 
-
+    public static class GameDefaultValue
+    {
+        public static int[] _personality = new int[] { 12, 35, 55, 86 };
+    }
 
 
 }

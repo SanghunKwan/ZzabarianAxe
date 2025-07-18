@@ -29,16 +29,16 @@ public class Zzabarian : CharacterBase
     //¿”Ω√
     private void Awake()
     {
-        InitCharacter();
+        InitCharacter("¡¶¿ÃΩº");
 
         _moveSpeed = _runSpeed;
     }
     //==
-    public void InitCharacter()
+    public void InitCharacter(in string name)
     {
         _charController = GetComponent<CharacterController>();
 
-        InitSetBase(1.2f, 0.8f, 4.1f, 2.9f);
+        InitSetBase(name, 1.2f, 0.8f, 4.1f, 2.9f);
 
         SetArmed(false);
         DisableArmed();
@@ -112,7 +112,10 @@ public class Zzabarian : CharacterBase
             Vector3 dir = new Vector3(mx, 0, mz);
             dir = dir.magnitude > 1 ? dir.normalized : dir;
 
-            transform.rotation = Quaternion.Euler(transform.eulerAngles.x, _followCam.eulerAngles.y, transform.eulerAngles.z);
+            if (_followCam != null)
+            {
+                transform.rotation = Quaternion.Euler(transform.eulerAngles.x, _followCam.eulerAngles.y, transform.eulerAngles.z);
+            }
             _charController.SimpleMove(transform.rotation * dir * _moveSpeed);
             //_charController.Move(dir * _moveSpeed * Time.deltaTime);
 

@@ -244,16 +244,21 @@ public class EnemyNormal : CharacterBase
             case AniState.Idle:
                 if (_isBattle)
                 {
-                    SetGoalLocation(_targetCharacter.position, AniState.Run);
-
-                    if (_attackWaitTime < _attackDelayTime)
+                    if (Vector3.Distance(transform.position, _targetCharacter.position) > _navAgent.stoppingDistance + _runSpeed * Time.deltaTime + _distanceOffset + _attackDistance)
                     {
-                        _attackWaitTime += Time.deltaTime;
+                        SetGoalLocation(_targetCharacter.position, AniState.Run);
                     }
                     else
                     {
-                        ExchangeAnimation(AniState.Attack);
-                        _attackWaitTime = 0;
+                        if (_attackWaitTime < _attackDelayTime)
+                        {
+                            _attackWaitTime += Time.deltaTime;
+                        }
+                        else
+                        {
+                            ExchangeAnimation(AniState.Attack);
+                            _attackWaitTime = 0;
+                        }
                     }
                 }
                 else
@@ -282,7 +287,7 @@ public class EnemyNormal : CharacterBase
                     break;
                 }
 
-                if (_navAgent.remainingDistance <= _navAgent.stoppingDistance + _runSpeed * Time.deltaTime + _distanceOffset + _attackDistance)
+                if (Vector3.Distance(transform.position, _targetCharacter.position) <= _navAgent.stoppingDistance + _runSpeed * Time.deltaTime + _distanceOffset + _attackDistance)
                 {
                     if (_attackWaitTime >= _attackDelayTime)
                     {

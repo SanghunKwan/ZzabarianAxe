@@ -88,6 +88,7 @@ public class Zzabarian : CharacterBase
 
     private void Update()
     {
+        if (_isDead) return;
         if (_isGuard) return;
 
         SetActionKeyProc();
@@ -264,7 +265,13 @@ public class Zzabarian : CharacterBase
 
         for (int i = 0; i < count; i++)
             _aniController.ResetTrigger(((AttackName)i).ToString());
+    }
 
-
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("EAttackZone"))
+        {
+            OnHitting();
+        }
     }
 }

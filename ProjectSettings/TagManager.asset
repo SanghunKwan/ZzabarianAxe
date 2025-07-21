@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 3
   tags:
   - PWeapon
+  - EAttackZone
+  - PlayerStart
   layers:
   - Default
   - TransparentFX

@@ -238,7 +238,8 @@ public class EnemyNormal : CharacterBase
 
     private void Update()
     {
-        Debug.Log(_nowState);
+        if (_isDead) return;
+
         switch (_nowState)
         {
             case AniState.Idle:
@@ -318,6 +319,14 @@ public class EnemyNormal : CharacterBase
     private void OnDestroy()
     {
         _destroyAction?.Invoke();
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("PWeapon"))
+        {
+
+        }
     }
 
     //private void OnGUI()

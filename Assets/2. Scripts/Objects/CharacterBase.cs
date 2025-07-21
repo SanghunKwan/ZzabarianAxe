@@ -10,7 +10,19 @@ public abstract class CharacterBase : MonoBehaviour
     protected float _runSpeed;
     protected float _backRunSpeed;
 
+    protected bool _isDeath;
+
+    //±âÃÊ ½ºÅÈ
+    protected int _level;
+    protected int _str;
+    protected int _vit;
+    protected int _dex;
+    protected int _int;
+    protected int _men;
+
     public string _myName => _name;
+    public bool _isDead => _isDeath;
+
 
 
     protected void InitSetBase(in string name, float walk, float backWalk, float run, float backRun)

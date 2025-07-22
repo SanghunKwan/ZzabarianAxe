@@ -46,6 +46,16 @@ namespace DefineEnums
 
     #endregion [Ä³¸¯ÅÍ]
 
+    #region Table
+    public enum TableType
+    {
+        MonsterTable,
+        LevelUpTable
+    }
+
+
+    #endregion Table
+
     public static class GameDefaultValue
     {
         public static int[] _personality = new int[] { 12, 35, 55, 86 };

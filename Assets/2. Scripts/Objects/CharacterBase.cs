@@ -12,6 +12,7 @@ public abstract class CharacterBase : MonoBehaviour
 
     protected bool _isDeath;
 
+    protected MethodAttack _attMethod;
     //±âÃÊ ½ºÅÈ
     protected int _level;
     protected int _str;
@@ -20,18 +21,31 @@ public abstract class CharacterBase : MonoBehaviour
     protected int _int;
     protected int _men;
 
+
+    public abstract int GetFinalDefPow(MethodAttack ma);
     public string _myName => _name;
     public bool _isDead => _isDeath;
+    public MethodAttack _methodAttack => _attMethod;
 
 
 
-    protected void InitSetBase(in string name, float walk, float backWalk, float run, float backRun)
+    protected void InitSetBase(in string name, float walk, float backWalk, float run, float backRun,
+                               int level, int s, int i, int v, int d, int m)
     {
+        _isDeath = false;
+
         _name = name;
         _walkSpeed = walk;
         _backWalkSpeed = backWalk;
         _runSpeed = run;
         _backRunSpeed = backRun;
+
+        _level = level;
+        _str = s;
+        _int = i;
+        _vit = v;
+        _dex = d;
+        _men = m;
 
         _aniController = GetComponent<Animator>();
     }

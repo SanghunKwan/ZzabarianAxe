@@ -3,26 +3,19 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MonsterTable : TableBase
+public class LevelUpTable : TableBase
 {
-
     enum INDEX
     {
         Index,
-        Name,
-        Level,
+        TargetXP,
         STR,
         INT,
         VIT,
         DEX,
         MEN,
-        Fwalk,
-        Bwalk,
-        Frun,
-        Brun,
-        PrefabName,
-        XP,
-        RewardIndex,
+        MovSpeedScale,
+        AttSpeedScale,
 
         Max
     }
@@ -51,7 +44,7 @@ public class MonsterTable : TableBase
             if (tempDic.Count == (int)INDEX.Max)
             {
                 _tableData.Add(int.Parse(tempDic[INDEX.Index.ToString()]), tempDic);
-                tempDic = new Dictionary<string, string>();
+                tempDic = new();
             }
         }
     }
@@ -76,4 +69,5 @@ public class MonsterTable : TableBase
             _tableData.Add(dicIndex, dic);
         }
     }
+
 }

@@ -13,7 +13,7 @@ public class SpawnFactory : MonoBehaviour
 
     [Header("Char Parameter")]
     [SerializeField] RoamType _charRoamType;
-
+    [SerializeField] int _enemyIndex;
 
 
     //임시
@@ -27,18 +27,17 @@ public class SpawnFactory : MonoBehaviour
     List<GameObject> _spawnObject;
 
 
-    private void Awake()
+    private void Start()
     {
         //임시
-        InitFactory("EnemyLeather");
+        InitFactory();
         //==
     }
 
-    public void InitFactory(in string prefabName)
+    public void InitFactory()
     {
-        //임시
+        string prefabName = TableManager._Instance.Tables[TableType.MonsterTable].ToStr(_enemyIndex, "PrefabName");
         _prefabEnemy = Resources.Load<GameObject>("Characters/" + prefabName);
-        //==
 
         if (_limitGenerateCount == 0)
             _isInfinity = true;
@@ -73,7 +72,7 @@ public class SpawnFactory : MonoBehaviour
                 _spawnObject.Add(ob);
 
                 EnemyNormal enemy = ob.GetComponent<EnemyNormal>();
-                enemy.InitCharacter("쏜", _charRoamType, () => _spawnObject.Remove(ob), _posList, randomIndex);
+                enemy.InitCharacter(_charRoamType, () => _spawnObject.Remove(ob), _posList, randomIndex, _enemyIndex);
 
                 _limitGenerateCount--;
             }

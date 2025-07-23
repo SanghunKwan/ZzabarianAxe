@@ -6,28 +6,45 @@ public class TableManager : MonoBehaviour
 {
     static TableManager _uniqueInstance;
 
-    Dictionary<TableType, string> _tables;
+    Dictionary<TableType, TableBase> _tables;
 
 
-    public static TableManager Instance => _uniqueInstance;
-    public IReadOnlyDictionary<TableType, string> Tables => _tables;
+    public static TableManager _Instance => _uniqueInstance;
+    public IReadOnlyDictionary<TableType, TableBase> Tables => _tables;
 
 
 
     private void Awake()
     {
         _uniqueInstance = this;
-        _tables = new Dictionary<TableType, string>();
-        LoadTable<MonsterTable>(TableType.MonsterTable);
+        _tables = new Dictionary<TableType, TableBase>();
     }
 
-    void LoadTable<T>(TableType tableType) where T : TableBase, new()
+    void LoadTableJson<T>(TableType tableType) where T : TableBase, new()
     {
         TextAsset asset = Resources.Load<TextAsset>("Tables/" + tableType.ToString());
 
-        _tables.Add(tableType, asset.text);
         T classIntance = new T();
+        classIntance.LoadJson(asset.text);
 
-        classIntance.Load(asset.text);
+        _tables.Add(tableType, classIntance);
     }
+    void LoadTableTxt<T>(TableType tableType) where T : TableBase, new()
+    {
+        TextAsset asset = Resources.Load<TextAsset>("Tables/Txt/" + tableType.ToString());
+
+        T classIntance = new T();
+        classIntance.LoadTxt(asset.text);
+
+        _tables.Add(tableType, classIntance);
+    }
+    public void AllLoadTable()
+    {
+        //LoadTableJson<MonsterTable>(TableType.MonsterTable);
+        //LoadTableJson<LevelUpTable>(TableType.LevelUpTable);
+
+        LoadTableTxt<MonsterTable>(TableType.MonsterTable);
+        LoadTableTxt<LevelUpTable>(TableType.LevelUpTable);
+    }
+
 }

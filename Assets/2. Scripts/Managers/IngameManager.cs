@@ -15,5 +15,9 @@ public class IngameManager : MonoBehaviour
     private void Awake()
     {
         _uniqueInstance = this;
+
+        //юс╫ц
+        TableManager._Instance.AllLoadTable();
+        //===
     }
 }

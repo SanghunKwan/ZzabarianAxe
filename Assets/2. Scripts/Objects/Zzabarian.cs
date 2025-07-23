@@ -3,15 +3,25 @@ using UnityEngine;
 
 public class Zzabarian : CharacterBase
 {
+    const float _fWalkSpeed = 1.2f;
+    const float _bWalkSpeed = 0.9f;
+    const float _fRunSpeed = 4.1f;
+    const float _bRunSpeed = 2.9f;
+
     [SerializeField] GameObject _weaponObj;
     [SerializeField] GameObject _decoWeaponObj;
     [SerializeField] BoxCollider _weaponCollider;
     [SerializeField] BoxCollider _kickCollider;
 
+    // Ω∫≈» ∫Øºˆ
     float _guardTime = 2;
+    float _moveSpeedScale;
+    float _attSpeedScale;
+    int _hp, _nowHP;
 
     //¬¸¡∂∫Øºˆ
     CharacterController _charController;
+    CheckAttackRange _weaponCheck;
 
     Transform _followCam;
 
@@ -20,28 +30,51 @@ public class Zzabarian : CharacterBase
     float _moveSpeed;
     float _protectingTime;
 
+    public int _finalAttPow => (int)((_str + (_dex * 0.5f) + (_vit * 0.2f)) * ((_level / 10) * 0.1f) + 1);
+    public override int GetFinalDefPow(MethodAttack ma)
+    {
+        if (ma == MethodAttack.Physics)
+            return (int)(_vit + _str * 0.5f);
+        else
+            return (int)(_men + _int * 0.8f);
+    }
+
+
     bool _isArmed;
     bool _isRun;
     bool _isAttack;
     bool _isGuard;
 
 
+
     //¿”Ω√
-    private void Awake()
+    private void Start()
     {
-        InitCharacter("¡¶¿ÃΩº");
+        InitCharacter("¡¶¿ÃΩº", 1);
 
         _moveSpeed = _runSpeed;
     }
     //==
-    public void InitCharacter(in string name)
+    public void InitCharacter(in string name, int level)
     {
         _charController = GetComponent<CharacterController>();
+        _weaponCheck = _weaponCollider.GetComponent<CheckAttackRange>();
+        TableBase table = TableManager._Instance.Tables[TableType.LevelUpTable];
 
-        InitSetBase(name, 1.2f, 0.8f, 4.1f, 2.9f);
+        int s = table.ToInt(level, "STR");
+        int i = table.ToInt(level, "INT");
+        int v = table.ToInt(level, "VIT");
+        int d = table.ToInt(level, "DEX");
+        int m = table.ToInt(level, "MEN");
+        _moveSpeedScale = table.ToFloat(level, "MovSpeedScale");
+        _attSpeedScale = table.ToFloat(level, "AttSpeedScale");
+        InitSetBase(name, _fWalkSpeed, _bWalkSpeed, _fRunSpeed, _bRunSpeed, level, s, i, v, d, m);
 
+        _nowHP = _hp = (int)((_vit * 1.2f + (_str * 0.6f + _dex * 0.4f)) * 9);
         SetArmed(false);
         DisableArmed();
+
+        _weaponCheck.InitSetRange(this);
     }
 
 
@@ -234,15 +267,22 @@ public class Zzabarian : CharacterBase
                     _moveSpeed = _backWalkSpeed;
                 else
                     _moveSpeed = _walkSpeed;
+
+                _moveSpeed *= _moveSpeedScale;
+                _aniController.speed *= _moveSpeedScale;
                 break;
             case AniState.Run:
                 if (_aniController.GetFloat("FNB") < 0)
                     _moveSpeed = _backRunSpeed;
                 else
                     _moveSpeed = _runSpeed;
+
+                _moveSpeed *= _moveSpeedScale;
+                _aniController.speed *= _moveSpeedScale;
                 break;
             case AniState.Attack:
                 _isAttack = true;
+                _aniController.speed *= _attSpeedScale;
                 break;
             case AniState.JustGuard:
                 _isGuard = true;
@@ -259,19 +299,48 @@ public class Zzabarian : CharacterBase
         _aniController.SetFloat("FNB", z);
     }
 
-    public void OnHitting()
+    public void OnHitting(EnemyNormal en)
     {
-        int count = (int)AttackName.Max;
+        if (_isGuard)
+        {
+        }
+        else
+        {
+            int count = (int)AttackName.Max;
+            for (int i = 0; i < count; i++)
+                _aniController.ResetTrigger(((AttackName)i).ToString());
 
-        for (int i = 0; i < count; i++)
-            _aniController.ResetTrigger(((AttackName)i).ToString());
+            int damage = en._finalAttPow;
+            int def = GetFinalDefPow(en._methodAttack);
+            int avoidance = (int)((1 - _dex) * 100f / (_level + _dex));
+            int finishDamage = damage - def;
+
+            if (en._methodAttack == MethodAttack.Physics)
+            {
+                if (avoidance >= Random.Range(0, 100)) return;
+
+                finishDamage *= (int)(damage * (avoidance * 0.01f));
+            }
+
+            finishDamage = finishDamage < 1 ? 1 : finishDamage;
+
+            if ((_nowHP -= finishDamage) <= 0)
+            {
+                _nowHP = 0;
+                ExchangeAnimation(AniState.Dead);
+            }
+
+            Debug.LogFormat("{0}[{1}:{2}]", _name, _nowHP, _hp);
+        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("EAttackZone"))
         {
-            OnHitting();
+            CheckAttackRange car = other.GetComponent<CheckAttackRange>();
+
+            OnHitting(car.GetOwner<EnemyNormal>());
         }
     }
 }

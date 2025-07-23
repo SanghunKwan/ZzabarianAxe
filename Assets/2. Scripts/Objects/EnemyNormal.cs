@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 
 public class EnemyNormal : CharacterBase
@@ -30,9 +31,11 @@ public class EnemyNormal : CharacterBase
     NavMeshAgent _navAgent;
     Transform _targetCharacter;
 
+
     //정보 변수
     AniState _nowState;
     public List<Vector3> _roamPointList;
+    int _hp, _nowHp;
     int _nowRoamIndex;
     int _personalityRate;
     bool _isSelected;
@@ -45,20 +48,58 @@ public class EnemyNormal : CharacterBase
 
     Action _destroyAction;
 
+    public int _finalAttPow
+    {
+        get
+        {
+            if (_attMethod == MethodAttack.Physics)
+                return (int)(_str + _vit * 0.5f);
+            else
+                return (int)(_int * 1.5f + _men * 0.5f);
+        }
+    }
+    public override int GetFinalDefPow(MethodAttack ma)
+    {
+        if (ma == MethodAttack.Physics)
+            return (int)(_vit + _str * 0.4f);
+        else
+            return (int)(_men + _int * 0.7f);
+    }
 
-    public void InitCharacter(in string name, RoamType roam, in Action onDestoryAction, List<Transform> posTF, int index)
+    public void InitCharacter(RoamType roam, in Action onDestoryAction, List<Transform> posTF, int roamIndex, int enemyIndex)
     {
         _navAgent = GetComponent<NavMeshAgent>();
-        InitSetBase(name, 1.4f, 1.4f, 4.4f, 4.4f);
+        TableBase table = TableManager._Instance.Tables[TableType.MonsterTable];
+
+        string n = table.ToStr(enemyIndex, "Name");
+        int l = table.ToInt(enemyIndex, "Level");
+        int s = table.ToInt(enemyIndex, "STR");
+        int i = table.ToInt(enemyIndex, "INT");
+        int v = table.ToInt(enemyIndex, "VIT");
+        int d = table.ToInt(enemyIndex, "DEX");
+        int m = table.ToInt(enemyIndex, "MEN");
+
+        float fw = table.ToFloat(enemyIndex, "Fwalk");
+        float bw = table.ToFloat(enemyIndex, "Bwalk");
+        float fr = table.ToFloat(enemyIndex, "Frun");
+        float br = table.ToFloat(enemyIndex, "Brun");
+
+        InitSetBase(n, fw, bw, fr, br, l, s, i, v, d, m);
         _destroyAction = onDestoryAction;
+        _nowHp = _hp = (int)((_vit * 1.3f + _str) * 8);
 
         _sensingArea.InitSet(this, _sightRange);
         _myPersonality = (EnemyPersonality)UnityEngine.Random.Range(0, (int)EnemyPersonality.Max);
         //_myPersonality = EnemyPersonality.Impatient;
         Debug.Log(_myPersonality);
         _personalityRate = GameDefaultValue._personality[(int)_myPersonality];
-        _nowRoamIndex = index;
+        _nowRoamIndex = roamIndex;
         _myRoamType = roam;
+
+        for (int j = 0; j < _attackZone.Length; j++)
+        {
+            _attackZone[j].GetComponent<CheckAttackRange>().InitSetRange(this);
+        }
 
         _roamPointList = new List<Vector3>(posTF.Count);
         foreach (var item in posTF)
@@ -67,15 +108,16 @@ public class EnemyNormal : CharacterBase
         }
         AllZoneDisable();
 
-        _isSelected = true;
 
         SelectDefaultAutomaticAction();
-
+        //_isSelected = true;
         startPos = transform.position;
     }
 
     public override void ExchangeAnimation(AniState state)
     {
+        if (_isDeath) return;
+
         switch (state)
         {
             case AniState.Walk:
@@ -99,9 +141,14 @@ public class EnemyNormal : CharacterBase
                     _aniController.SetTrigger("Attack2");
                 break;
             case AniState.Dead:
+                _isDeath = true;
                 _aniController.SetTrigger("Death");
                 break;
-
+            case AniState.BackHome:
+                _aniController.speed = _runSpeed * 2;
+                _navAgent.speed = _runSpeed * 2;
+                _navAgent.stoppingDistance = 0;
+                break;
         }
 
         _nowState = state;
@@ -284,7 +331,7 @@ public class EnemyNormal : CharacterBase
                 if (Vector3.Distance(transform.position, startPos) > _followDistance)
                 {
                     _isBattle = false;
-                    SetGoalLocation(_roamPointList[_nowRoamIndex]);
+                    SetGoalLocation(_roamPointList[_nowRoamIndex], AniState.BackHome);
                     break;
                 }
 
@@ -325,7 +372,33 @@ public class EnemyNormal : CharacterBase
     {
         if (other.CompareTag("PWeapon"))
         {
+            CheckAttackRange ar = other.GetComponent<CheckAttackRange>();
 
+            Zzabarian ply = ar.GetOwner<Zzabarian>();
+            int def = GetFinalDefPow(ply._methodAttack);
+            int damage = ply._finalAttPow;
+
+            int avoidance = (int)((1 - _dex) * 100f / (_level + _dex));
+            int finishDamage = damage - def;
+
+            if (ply._methodAttack == MethodAttack.Physics)
+            {
+                if (avoidance >= Random.Range(0, 100)) return;
+
+                finishDamage *= (int)(damage * (avoidance * 0.01f));
+            }
+
+            finishDamage = finishDamage < 1 ? 1 : finishDamage;
+
+            if ((_nowHp -= finishDamage) <= 0)
+            {
+                _nowHp = 0;
+                ExchangeAnimation(AniState.Dead);
+                AllZoneDisable();
+                GetComponent<BoxCollider>().enabled = false;
+            }
+
+            Debug.LogFormat("{0}[{1}:{2}]", _name, _nowHp, _hp);
         }
     }
 

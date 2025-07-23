@@ -3,6 +3,11 @@ using UnityEngine;
 namespace DefineEnums
 {
     #region [Ä³¸¯ÅÍ]
+    public enum MethodAttack
+    {
+        Physics,
+        Magic,
+    }
     public enum EnemyPersonality
     {
         Lazy,                               //12

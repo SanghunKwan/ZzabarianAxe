@@ -206,6 +206,8 @@ public class Zzabarian : CharacterBase
 
     private void LateUpdate()
     {
+        if (_isDeath) return;
+
         if (Input.GetButtonDown("Run"))
             _isRun = !_isRun;
 
@@ -286,6 +288,10 @@ public class Zzabarian : CharacterBase
                 break;
             case AniState.JustGuard:
                 _isGuard = true;
+                break;
+            case AniState.Dead:
+                _isDeath = true;
+                _aniController.SetTrigger("Dead");
                 break;
 
         }

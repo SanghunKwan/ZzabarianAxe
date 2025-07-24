@@ -1006,7 +1006,7 @@ GameObject:
   - component: {fileID: 8275434496679791545}
   m_Layer: 0
   m_Name: AttackZone2
-  m_TagString: PWeapon
+  m_TagString: EAttackZone
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3533,7 +3533,7 @@ GameObject:
   - component: {fileID: 1497930919637905555}
   m_Layer: 0
   m_Name: AttackZone1
-  m_TagString: PWeapon
+  m_TagString: EAttackZone
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

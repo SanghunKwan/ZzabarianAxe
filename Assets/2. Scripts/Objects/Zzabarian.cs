@@ -131,8 +131,6 @@ public class Zzabarian : CharacterBase
         if (Input.GetButtonDown("WeaponEquip"))
             SetArmed(!_isArmed);
 
-
-
         Ray downRay = new Ray(transform.position + Vector3.up, Vector3.down);
         if (Physics.Raycast(downRay, 1.2f))
 

@@ -18,6 +18,7 @@ public class EnemyNormal : CharacterBase
     [Header("캐릭터 Resource Link")]
     [SerializeField] BoxCollider[] _attackZone;
     [SerializeField] SensingArea _sensingArea;
+    [SerializeField] SimpleStatusWnd _wnd;
 
     //스탯
     float _attackDistance = 1.8f;
@@ -48,6 +49,8 @@ public class EnemyNormal : CharacterBase
 
     Action _destroyAction;
 
+    public float _hpRate => ((float)_nowHp) / _hp;
+    public float _attackTimeRate => (_nowWaitTime / _attackDelayTime);
     public int _finalAttPow
     {
         get
@@ -112,6 +115,9 @@ public class EnemyNormal : CharacterBase
         SelectDefaultAutomaticAction();
         //_isSelected = true;
         startPos = transform.position;
+
+        _wnd.OpenSimpleWnd(_name);
+        _wnd.CloseSimpleWnd();
     }
 
     public override void ExchangeAnimation(AniState state)
@@ -122,15 +128,16 @@ public class EnemyNormal : CharacterBase
         {
             case AniState.Walk:
 #if UNITY_EDITOR
-                //_aniController.speed = _walkSpeed * 2;
+                //_aniController.speed = _walkSpeed ;
                 _navAgent.speed = _walkSpeed * _speedScale;
                 _aniController.speed = _speedScale;
+                _navAgent.stoppingDistance = 0;
 #else
                 _navAgent.speed = _walkSpeed;
 #endif
                 break;
             case AniState.Run:
-                //_aniController.speed = _runSpeed * 2;
+                _aniController.speed = _runSpeed;
                 _navAgent.speed = _runSpeed;
                 _navAgent.stoppingDistance = _attackDistance - _distanceOffset;
                 break;
@@ -352,11 +359,17 @@ public class EnemyNormal : CharacterBase
                 if (_navAgent.remainingDistance <= _navAgent.stoppingDistance + _runSpeed * Time.deltaTime + _distanceOffset + _attackDistance)
                 //플레이어 쪽 방향을 보고 있어야 한다.
                 {
-                    transform.LookAt(_targetCharacter);
+                    transform.rotation = Quaternion.LookRotation(_targetCharacter.transform.position - transform.position, Vector3.up);
                 }
                 else
                 {
                     SetGoalLocation(_targetCharacter.position, AniState.Run);
+                }
+                break;
+            case AniState.BackHome:
+                if (_navAgent.remainingDistance <= _navAgent.stoppingDistance + _runSpeed * Time.deltaTime * 2 + _distanceOffset)
+                {
+                    ExchangeAnimation(AniState.Idle);
                 }
                 break;
         }
@@ -398,7 +411,8 @@ public class EnemyNormal : CharacterBase
                 GetComponent<BoxCollider>().enabled = false;
             }
 
-            Debug.LogFormat("{0}[{1}:{2}]", _name, _nowHp, _hp);
+            _wnd.SetHPRate(_hpRate);
+            //Debug.LogFormat("{0}[{1}:{2}]", _name, _nowHp, _hp);
         }
     }
 

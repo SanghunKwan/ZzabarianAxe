@@ -9,6 +9,7 @@ public class IngameManager : MonoBehaviour
 
     public static IngameManager _instance => _uniqueInstance;
 
+    [SerializeField] UIManager _uiManager;
 
 
 
@@ -19,5 +20,10 @@ public class IngameManager : MonoBehaviour
         //юс╫ц
         TableManager._Instance.AllLoadTable();
         //===
+    }
+
+    public void CharacterHpChanged(float currentHpRate)
+    {
+        _uiManager.SetTargetRate(currentHpRate);
     }
 }

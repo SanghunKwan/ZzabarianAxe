@@ -53,6 +53,7 @@ public class Zzabarian : CharacterBase
         InitCharacter("¡¶¿ÃΩº", 1);
 
         _moveSpeed = _runSpeed;
+        IngameManager._instance.CharacterHpChanged(1);
     }
     //==
     public void InitCharacter(in string name, int level)
@@ -333,6 +334,7 @@ public class Zzabarian : CharacterBase
                 _nowHP = 0;
                 ExchangeAnimation(AniState.Dead);
             }
+            IngameManager._instance.CharacterHpChanged(((float)_nowHP) / _hp);
 
             Debug.LogFormat("{0}[{1}:{2}]", _name, _nowHP, _hp);
         }

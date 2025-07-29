@@ -44,6 +44,7 @@ public class SimpleStatusWnd : MonoBehaviour
     {
         _hp.value = rate;
         gameObject.SetActive(true);
+        _currentTimerShowedTime = 0;
     }
     public void SetATimer(float rate)
     {

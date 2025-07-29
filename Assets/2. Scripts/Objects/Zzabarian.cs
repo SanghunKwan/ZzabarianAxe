@@ -30,7 +30,7 @@ public class Zzabarian : CharacterBase
     float _moveSpeed;
     float _protectingTime;
 
-    public int _finalAttPow => (int)((_str + (_dex * 0.5f) + (_vit * 0.2f)) * ((_level / 10) * 0.1f) + 1);
+    public int _finalAttPow => (int)((_str + (_dex * 0.5f) + (_vit * 0.2f)) * (((_level / 10) * 0.1f) + 1));
     public override int GetFinalDefPow(MethodAttack ma)
     {
         if (ma == MethodAttack.Physics)
@@ -50,10 +50,11 @@ public class Zzabarian : CharacterBase
     //임시
     private void Start()
     {
-        InitCharacter("제이슨", 1);
+        string tempName = "제이슨";
+        InitCharacter(tempName, 1);
 
         _moveSpeed = _runSpeed;
-        IngameManager._instance.CharacterHpChanged(1);
+        IngameManager._instance.InitCharacters(tempName);
     }
     //==
     public void InitCharacter(in string name, int level)
@@ -133,7 +134,7 @@ public class Zzabarian : CharacterBase
             SetArmed(!_isArmed);
 
         Ray downRay = new Ray(transform.position + Vector3.up, Vector3.down);
-        if (Physics.Raycast(downRay, 1.2f))
+        if (Physics.Raycast(downRay, 1.5f))
 
         //if (_charController.isGrounded)
         {
@@ -163,6 +164,11 @@ public class Zzabarian : CharacterBase
                 else
                     ExchangeAnimation(AniState.Walk);
             }
+        }
+        else
+        {
+            _charController.SimpleMove(Vector3.zero);
+
         }
 
         //임시
@@ -347,6 +353,11 @@ public class Zzabarian : CharacterBase
             CheckAttackRange car = other.GetComponent<CheckAttackRange>();
 
             OnHitting(car.GetOwner<EnemyNormal>());
+        }
+
+        else if (other.CompareTag("ArrivePosition"))
+        {
+            //게임 클리어.
         }
     }
 }

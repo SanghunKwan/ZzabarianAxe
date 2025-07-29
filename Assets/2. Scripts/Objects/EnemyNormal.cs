@@ -1,5 +1,6 @@
 using DefineEnums;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -142,7 +143,7 @@ public class EnemyNormal : CharacterBase
                 _navAgent.stoppingDistance = _attackDistance - _distanceOffset;
                 break;
             case AniState.Attack:
-                if (UnityEngine.Random.Range(0, 2) == 0)
+                if (Random.Range(0, 2) == 0)
                     _aniController.SetTrigger("Attack1");
                 else
                     _aniController.SetTrigger("Attack2");
@@ -150,6 +151,7 @@ public class EnemyNormal : CharacterBase
             case AniState.Dead:
                 _isDeath = true;
                 _aniController.SetTrigger("Death");
+
                 break;
             case AniState.BackHome:
                 _aniController.speed = _runSpeed * 2;
@@ -217,11 +219,11 @@ public class EnemyNormal : CharacterBase
     {
         if (_isSelected) return;
 
-        bool selectiveVariable = UnityEngine.Random.Range(0, 100) >= _personalityRate;
+        bool selectiveVariable = Random.Range(0, 100) >= _personalityRate;
         //bool selectiveVariable = false;
         if (selectiveVariable)
         {
-            _nowWaitTime = UnityEngine.Random.Range(_minWaitTime, _maxWaitTime);
+            _nowWaitTime = Random.Range(_minWaitTime, _maxWaitTime);
             ExchangeAnimation(AniState.Idle);
             Debug.LogFormat("{0}:{1:F}sec", _nowState, _nowWaitTime);
         }
@@ -238,7 +240,7 @@ public class EnemyNormal : CharacterBase
         switch (_myRoamType)
         {
             case RoamType.Random:
-                _nowRoamIndex = UnityEngine.Random.Range(0, _roamPointList.Count);
+                _nowRoamIndex = Random.Range(0, _roamPointList.Count);
                 index = _nowRoamIndex;
                 break;
             case RoamType.Inorder:
@@ -324,9 +326,13 @@ public class EnemyNormal : CharacterBase
                 }
                 break;
             case AniState.Walk:
-                if (_navAgent.remainingDistance < _navAgent.stoppingDistance + _walkSpeed * Time.deltaTime + _distanceOffset)
+
+                if (_navAgent.remainingDistance <
+                    _navAgent.stoppingDistance + _walkSpeed * Time.deltaTime + _distanceOffset)
                 {
                     _isSelected = false;
+                    startPos = _navAgent.pathEndPosition;
+                    _sensingArea.ColliderOnoff(true);
                 }
                 break;
             case AniState.Run:
@@ -339,6 +345,7 @@ public class EnemyNormal : CharacterBase
                 {
                     _isBattle = false;
                     SetGoalLocation(_roamPointList[_nowRoamIndex], AniState.BackHome);
+                    
                     break;
                 }
 
@@ -393,12 +400,13 @@ public class EnemyNormal : CharacterBase
 
             int avoidance = (int)((1 - _dex) * 100f / (_level + _dex));
             int finishDamage = damage - def;
+            Debug.Log(damage + ":" + def);
 
             if (ply._methodAttack == MethodAttack.Physics)
             {
                 if (avoidance >= Random.Range(0, 100)) return;
 
-                finishDamage *= (int)(damage * (avoidance * 0.01f));
+                finishDamage *= (int)(damage * ((100 - avoidance) * 0.01f));
             }
 
             finishDamage = finishDamage < 1 ? 1 : finishDamage;
@@ -406,14 +414,30 @@ public class EnemyNormal : CharacterBase
             if ((_nowHp -= finishDamage) <= 0)
             {
                 _nowHp = 0;
+
+                if (!_isDeath)
+                    IngameManager._instance.MonsterDead();
+
                 ExchangeAnimation(AniState.Dead);
                 AllZoneDisable();
                 GetComponent<BoxCollider>().enabled = false;
+
             }
 
             _wnd.SetHPRate(_hpRate);
             //Debug.LogFormat("{0}[{1}:{2}]", _name, _nowHp, _hp);
         }
+    }
+
+    public void OnCorpseDelete()
+    {
+        StartCoroutine(DeleteAfterSeconds(3));
+    }
+    IEnumerator DeleteAfterSeconds(float delaySeconds)
+    {
+        yield return new WaitForSeconds(delaySeconds);
+
+        Destroy(gameObject);
     }
 
     //private void OnGUI()

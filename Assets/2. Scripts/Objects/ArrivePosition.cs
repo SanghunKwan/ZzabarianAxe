@@ -14,5 +14,4 @@ public class ArrivePosition : MonoBehaviour
         Instantiate(Resources.Load<GameObject>("Effects/ArriveEffect"), transform);
     }
 
-
 }

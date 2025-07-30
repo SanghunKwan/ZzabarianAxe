@@ -59,4 +59,10 @@ public class IngameManager : MonoBehaviour
             _arrivePosition.ActivateArrivePosition();
         }
     }
+
+    public void ArriveDestination()
+    {
+        _uiManager.SetClosingWindowOpen(true);
+
+    }
 }

@@ -61,6 +61,14 @@ namespace DefineEnums
 
     #endregion Table
 
+    #region [투사체]
+    public enum ProjectileTargetType
+    {
+        Vector,
+        GameObject
+    }
+    #endregion [투사체]
+
     public static class GameDefaultValue
     {
         public static int[] _personality = new int[] { 12, 35, 55, 86 };

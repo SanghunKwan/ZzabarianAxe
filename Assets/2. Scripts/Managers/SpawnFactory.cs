@@ -71,8 +71,8 @@ public class SpawnFactory : MonoBehaviour
                 GameObject ob = Instantiate(_prefabEnemy, _posList[randomIndex].position, _posList[randomIndex].rotation);
                 _spawnObject.Add(ob);
 
-                EnemyNormal enemy = ob.GetComponent<EnemyNormal>();
-                enemy.InitCharacter(_charRoamType, () => _spawnObject.Remove(ob), _posList, randomIndex, _enemyIndex);
+                EnemyBase enemy = ob.GetComponent<EnemyBase>();
+                enemy.InitBase(_charRoamType, () => _spawnObject.Remove(ob), _posList, randomIndex, _enemyIndex);
 
                 _limitGenerateCount--;
             }

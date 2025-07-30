@@ -8,6 +8,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] TextMeshProUGUI _characterNameText;
     [SerializeField] TextMeshProUGUI _killCountText;
 
+    [SerializeField] ClosingWindow _closingWindow;
+
     float _targetRate;
 
 
@@ -39,6 +41,11 @@ public class UIManager : MonoBehaviour
     public void SetKillCountText(int count)
     {
         _killCountText.text = count.ToString();
+    }
+
+    public void SetClosingWindowOpen(bool isOn)
+    {
+        _closingWindow.gameObject.SetActive(isOn);
     }
 
 }

@@ -310,7 +310,7 @@ public class Zzabarian : CharacterBase
         _aniController.SetFloat("FNB", z);
     }
 
-    public void OnHitting(EnemyNormal en)
+    public void OnHitting(EnemyBase en)
     {
         if (_isGuard)
         {
@@ -355,9 +355,19 @@ public class Zzabarian : CharacterBase
             OnHitting(car.GetOwner<EnemyNormal>());
         }
 
+        else if (other.CompareTag("EProjectile"))
+        {
+            //투사체 피격
+            ProjectileObject projectile = other.GetComponent<ProjectileObject>();
+            projectile.CollideWithCharacter();
+            OnHitting(projectile.GetOwner<EnemyMagic>());
+
+        }
         else if (other.CompareTag("ArrivePosition"))
         {
             //게임 클리어.
+            IngameManager._instance.ArriveDestination();
         }
+
     }
 }

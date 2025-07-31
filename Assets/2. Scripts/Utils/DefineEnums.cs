@@ -32,6 +32,7 @@ namespace DefineEnums
         Attack,
         JustGuard,
         BackHome,
+        MakeDistance,
 
         Dead = 50
     }

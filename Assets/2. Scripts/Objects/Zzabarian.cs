@@ -50,7 +50,7 @@ public class Zzabarian : CharacterBase
     //임시
     private void Start()
     {
-        string tempName = "제이슨";
+        string tempName = "코난";
         InitCharacter(tempName, 1);
 
         _moveSpeed = _runSpeed;

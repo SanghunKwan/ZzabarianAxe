@@ -100,6 +100,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b88064da570ca841865399491e25626, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _prefabCollideEffect: {fileID: 6109047741263480766, guid: 7547ef6f387c95a4e86632a1f7e7870c, type: 3}
 --- !u!135 &6886569151977304071
 SphereCollider:
   m_ObjectHideFlags: 0

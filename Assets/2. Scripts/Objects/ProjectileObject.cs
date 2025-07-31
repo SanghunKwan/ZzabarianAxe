@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class ProjectileObject : MonoBehaviour
 {
+    [SerializeField] GameObject _prefabCollideEffect;
+
     ProjectileTargetType _type;
     Vector3 _movingDirection;
     GameObject _targetObject;
@@ -12,23 +14,28 @@ public class ProjectileObject : MonoBehaviour
     float _currentTime;
     CharacterBase _owner;
 
+    Action _destoryAction;
 
-    public void InitProjectile(ProjectileTargetType projectileType, in Vector3 targetPosition, float speed, float lifeTime, EnemyMagic owner)
+
+    public void InitProjectile(ProjectileTargetType projectileType, in Vector3 targetPosition, float speed, float lifeTime, EnemyMagic owner, Action destroyEvent)
     {
         _type = projectileType;
         _movingDirection = (targetPosition + Vector3.up - transform.position).normalized;
         _targetObject = null;
         _speed = speed;
         _lifeTime = lifeTime;
+        _destoryAction = destroyEvent;
 
         _owner = owner;
+
     }
-    public void InitProjectile(ProjectileTargetType projectileType, GameObject targetObject, float speed, float lifeTime, EnemyMagic owner)
+    public void InitProjectile(ProjectileTargetType projectileType, GameObject targetObject, float speed, float lifeTime, EnemyMagic owner, Action destroyEvent)
     {
         _type = projectileType;
         _targetObject = targetObject;
         _speed = speed;
         _lifeTime = lifeTime;
+        _destoryAction = destroyEvent;
 
         _owner = owner;
     }
@@ -69,6 +76,12 @@ public class ProjectileObject : MonoBehaviour
 
     public void CollideWithCharacter()
     {
+        Instantiate(_prefabCollideEffect, transform.position, Quaternion.identity);
         Destroy(gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        _destoryAction?.Invoke();
     }
 }

@@ -41,6 +41,7 @@ public abstract class EnemyBase : CharacterBase
     bool _isSelected;
     bool _isBack;
     bool _isBattle;
+    protected bool _isAttackStop;
     float _nowWaitTime;
     float _attackWaitTime;
 
@@ -152,6 +153,11 @@ public abstract class EnemyBase : CharacterBase
             case AniState.BackHome:
                 _aniController.speed = _runSpeed * 2;
                 _navAgent.speed = _runSpeed * 2;
+                _navAgent.stoppingDistance = 0;
+                break;
+            case AniState.MakeDistance:
+                _aniController.speed = _runSpeed;
+                _navAgent.speed = _runSpeed;
                 _navAgent.stoppingDistance = 0;
                 break;
         }
@@ -278,7 +284,12 @@ public abstract class EnemyBase : CharacterBase
                     {
                         if (_attackWaitTime < _attackDelayTime)
                         {
-                            _attackWaitTime += Time.deltaTime;
+                            if (!_isAttackStop)
+                                _attackWaitTime += Time.deltaTime;
+                            else
+                            {
+                                SetGoalLocation(transform.position * 2 - _targetCharacter.position, AniState.MakeDistance);
+                            }
                         }
                         else
                         {
@@ -305,7 +316,11 @@ public abstract class EnemyBase : CharacterBase
                 }
                 break;
             case AniState.Run:
-                if (_attackWaitTime < _attackDelayTime)
+                if (_isAttackStop)
+                {
+                    SetGoalLocation(transform.position * 2 - _targetCharacter.position, AniState.MakeDistance);
+                }
+                else if (_attackWaitTime < _attackDelayTime)
                 {
                     _attackWaitTime += Time.deltaTime;
                 }
@@ -347,6 +362,19 @@ public abstract class EnemyBase : CharacterBase
                 {
                     ExchangeAnimation(AniState.Idle);
                 }
+                break;
+            case AniState.MakeDistance:
+                if (_isAttackStop || _attackWaitTime < _attackDelayTime)
+                {
+                    SetGoalLocation(transform.position * 2 - _targetCharacter.position, AniState.MakeDistance);
+
+                    if (!_isAttackStop)
+                    {
+                        _attackWaitTime += Time.deltaTime;
+                    }
+                }
+                else
+                    SetGoalLocation(transform.position, AniState.Idle);
                 break;
         }
         SelectDefaultAutomaticAction();
